@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, FileText, Bell, Settings,
   ChevronRight, TrendingUp, CheckCircle, Clock, Activity,
-  LogOut, Menu, X, Building2, Globe, Shield
+  LogOut, Menu, X, Building2, Globe, Shield,
+  BookOpen, Wallet, GraduationCap, Calendar
 } from 'lucide-react';
 
 /* ── Mock user data ───────────────────────────────────────────────────────── */
@@ -211,12 +212,14 @@ const DashboardContent = () => {
 
   // Default Nav Items for regular members
   const regularNav = [
-    { id: 'Dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'Members', icon: Users, label: 'Members' },
-    { id: 'Reports', icon: FileText, label: 'Reports' },
-    { id: 'Departments', icon: Building2, label: 'Departments' },
-    { id: 'Notifications', icon: Bell, label: 'Notifications', badge: 2 },
-    { id: 'Settings', icon: Settings, label: 'Settings' },
+    { id: 'Dashboard',          icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'PlansDirectives',    icon: BookOpen,        label: 'Plans & Directives' },
+    { id: 'TrainingRequests',   icon: GraduationCap,   label: 'Training Requests' },
+    { id: 'BudgetRequests',     icon: Wallet,          label: 'Budget Requests' },
+    { id: 'Meetings',           icon: Calendar,        label: 'Meetings' },
+    { id: 'Reporting',          icon: FileText,        label: 'Reporting' },
+    { id: 'Notifications',      icon: Bell,            label: 'Notifications', badge: 2 },
+    { id: 'Settings',           icon: Settings,        label: 'Settings' },
   ];
 
   const navItems = isChairman ? chairmanNav : isSubChairman ? subChairmanNav : isSecretary ? secretaryNav : regularNav;
@@ -401,9 +404,38 @@ const DashboardContent = () => {
             </div>
           </div>
         );
+      case 'PlansDirectives':
+        return (
+          <div style={{ padding: '1rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Plans & Directives</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>View and acknowledge organizational plans distributed to your unit.</p>
+            <div style={{ backgroundColor: '#fff', padding: '2rem', borderRadius: '1rem', border: '1px solid #f1f5f9', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', border: '2px dashed #e2e8f0' }}>
+              Plans & Directives Workspace — Coming Soon
+            </div>
+          </div>
+        );
+      case 'TrainingRequests':
+        return (
+          <div style={{ padding: '1rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Training Requests</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Submit and track requests for training programs and capacity-building sessions.</p>
+            <div style={{ backgroundColor: '#fff', padding: '2rem', borderRadius: '1rem', border: '2px dashed #e2e8f0', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+              Training Request Form — Coming Soon
+            </div>
+          </div>
+        );
+      case 'BudgetRequests':
+        return (
+          <div style={{ padding: '1rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Budget Requests</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Submit budget requests and track approval status for your department.</p>
+            <div style={{ backgroundColor: '#fff', padding: '2rem', borderRadius: '1rem', border: '2px dashed #e2e8f0', minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+              Budget Request Form — Coming Soon
+            </div>
+          </div>
+        );
       default:
-        // Handle views from other roles if needed, or generic placeholder
-        return <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>{currentView} Content Placeholder</div>;
+        return <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>{currentView} — Coming Soon</div>;
     }
   };
 
