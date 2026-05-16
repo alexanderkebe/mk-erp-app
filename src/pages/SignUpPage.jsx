@@ -115,6 +115,20 @@ const SignUpPage = () => {
       title={step === 3 ? t('step_success') : t('signup_title')} 
       subtitle={step === 3 ? t('success_msg') : t('signup_subtitle')}
     >
+      {/* Language Toggle */}
+      <div style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', zIndex: 10 }}>
+        <button 
+          onClick={toggleLanguage}
+          style={{
+            padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--accent)',
+            background: 'var(--card-bg)', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '700',
+            boxShadow: 'var(--shadow-sm)', transition: 'all 0.2s'
+          }}
+        >
+          {language === 'am' ? 'English' : 'አማርኛ'}
+        </button>
+      </div>
+
       {/* Progress Bar */}
       {step < 3 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
