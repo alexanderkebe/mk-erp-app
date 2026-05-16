@@ -21,16 +21,24 @@ app.use('/api/users', userRoutes);
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'MK ERP API running' }));
 
 // ── MongoDB Connection ─────────────────────────────────────────────────────
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ MongoDB connected successfully');
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) return;
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB connected');
+  } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
-    console.error('👉 Make sure MongoDB is running or check your MONGO_URI in server/.env');
-    process.exit(1);
+  }
+};
+
+// Run connection
+connectDB();
+
+// Only listen if not running as a serverless function
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
+}
+
+module.exports = app;
