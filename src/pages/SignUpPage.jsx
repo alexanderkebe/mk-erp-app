@@ -222,7 +222,7 @@ const SignUpPage = () => {
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-subtle)', marginBottom: '1rem', textTransform: 'uppercase' }}>
                 {t('category_title')}
-              </ins>
+              </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div 
                   onClick={() => handleSelectChange('category', 'coordinator')}
