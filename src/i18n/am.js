@@ -11,6 +11,7 @@ const am = {
   label_password: "የይለፍ ቃል",
   btn_signin: "ይግቡ",
   err_fill_fields: "እባክዎ ሁሉንም ክፍሎች ይሙሉ::",
+  err_server_connection: "ከሲስተሙ ጋር መገናኘት አልተቻለም:: እባክዎ ኢንተርኔትዎን ወይም ሰርቨሩን ያረጋግጡ::",
   forgot_password: "የይለፍ ቃል ረስተዋል?",
   no_account_text: "አካውንት የለዎትም?",
   link_create_account: "አዲስ ይፍጠሩ",

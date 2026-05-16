@@ -11,6 +11,7 @@ const en = {
   label_password: "Password",
   btn_signin: "Sign In",
   err_fill_fields: "Please fill in all fields.",
+  err_server_connection: "Cannot connect to server. Please check your internet or try again later.",
   forgot_password: "Forgot password?",
   no_account_text: "Don't have an account?",
   link_create_account: "Create one",
