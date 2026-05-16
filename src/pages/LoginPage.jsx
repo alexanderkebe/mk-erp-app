@@ -27,8 +27,10 @@ const LoginPage = () => {
     setLoading(true);
     setError('');
 
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

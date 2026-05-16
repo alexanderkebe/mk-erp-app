@@ -143,7 +143,8 @@ const DashboardContent = () => {
         setUsersLoading(true);
         setUsersError('');
         try {
-          const res = await fetch('/api/users');
+          const apiUrl = import.meta.env.VITE_API_URL || '';
+          const res = await fetch(`${apiUrl}/api/users`);
           if (!res.ok) throw new Error('Failed to fetch users');
           const data = await res.json();
           setUsersList(data);
@@ -283,7 +284,18 @@ const DashboardContent = () => {
                 <h1 style={{ fontSize: '1.5rem', fontWeight: '800' }}>{t('members_title')}</h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('members_subtitle')}</p>
               </div>
-              <button onClick={() => {}} style={{ padding: '0.5rem 1rem', borderRadius: '8px', backgroundColor: 'var(--primary)', color: '#fff', border: 'none', fontWeight: '600', cursor: 'pointer' }}>
+              <button onClick={() => {
+                const fetchUsers = async () => {
+                  setUsersLoading(true);
+                  try {
+                    const apiUrl = import.meta.env.VITE_API_URL || '';
+                    const res = await fetch(`${apiUrl}/api/users`);
+                    const data = await res.json();
+                    setUsersList(data);
+                  } catch (err) {} finally { setUsersLoading(false); }
+                };
+                fetchUsers();
+              }} style={{ padding: '0.5rem 1rem', borderRadius: '8px', backgroundColor: 'var(--primary)', color: '#fff', border: 'none', fontWeight: '600', cursor: 'pointer' }}>
                 {t('refresh_data')}
               </button>
             </div>
