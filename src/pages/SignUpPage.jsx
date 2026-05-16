@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, Phone, ArrowRight, ArrowLeft, CheckCircle2, Camera } from 'lucide-react';
+import { 
+  User, Lock, Phone, ArrowRight, ChevronLeft, 
+  CheckCircle2, Camera, Building2, Landmark, MapPin, 
+  Loader2, Shield, Users 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthLayout from '../components/AuthLayout';
-import { InputField, PremiumSelect } from '../components/FormFields';
+import { InputField, PremiumSelect, CategoryCard, SelectWrapper } from '../components/FormFields';
 import { 
   CATEGORIES, 
   COORDINATOR_ROLES, 
@@ -36,19 +40,18 @@ const SignUpPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name, value) => {
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-      if (name === 'category') {
-        newData.subRole = '';
-        newData.region = '';
-        newData.position = '';
-      }
-      return newData;
-    });
+  const handleCategorySelect = (categoryId) => {
+    setFormData(prev => ({
+      ...prev,
+      category: categoryId,
+      subRole: '',
+      region: '',
+      position: ''
+    }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setError('');
     
@@ -63,7 +66,7 @@ const SignUpPage = () => {
 
       if (res.ok) {
         setStep(3);
-        setTimeout(() => navigate('/login'), 4000);
+        setTimeout(() => navigate('/login'), 5000);
       } else {
         setError(data.message || 'Registration failed');
       }
@@ -88,21 +91,24 @@ const SignUpPage = () => {
     const source = formData.category === 'coordinator' ? COORDINATOR_ROLES : REGIONAL_ROLES;
     return (source || []).map(r => ({
       id: r.id,
-      name: language === 'am' ? r.amharic : r.english
+      amharic: r.amharic,
+      english: r.english
     }));
   };
 
   const getRegionOptions = () => {
     return REGIONS.map(r => ({
       id: r.id,
-      name: language === 'am' ? (r.amharic || r.name) : r.name
+      amharic: r.amharic || r.name,
+      english: r.name
     }));
   };
 
   const getPositionOptions = () => {
     return MAIN_OFFICE_POSITIONS.map(p => ({
       id: p.id,
-      name: language === 'am' ? p.amharic : p.english
+      amharic: p.amharic,
+      english: p.english
     }));
   };
 
@@ -125,41 +131,6 @@ const SignUpPage = () => {
         </button>
       </div>
 
-      {/* Progress Bar */}
-      {step < 3 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{
-              width: '24px', height: '24px', borderRadius: '50%', 
-              backgroundColor: step >= 1 ? 'var(--primary)' : '#e2e8f0',
-              color: '#fff', fontSize: '0.75rem', fontWeight: '700',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>1</div>
-            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: step >= 1 ? 'var(--text-main)' : 'var(--text-subtle)', textTransform: 'uppercase' }}>
-              {t('step_account')}
-            </span>
-          </div>
-          <div style={{ width: '40px', height: '2px', backgroundColor: step >= 2 ? 'var(--primary)' : '#e2e8f0' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{
-              width: '24px', height: '24px', borderRadius: '50%', 
-              backgroundColor: step >= 2 ? 'var(--primary)' : '#e2e8f0',
-              color: '#fff', fontSize: '0.75rem', fontWeight: '700',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>2</div>
-            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: step >= 2 ? 'var(--text-main)' : 'var(--text-subtle)', textTransform: 'uppercase' }}>
-              {t('step_role')}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          {error}
-        </div>
-      )}
-
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
@@ -169,36 +140,45 @@ const SignUpPage = () => {
             exit={{ opacity: 0, x: -20 }}
             style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
           >
-            {/* Photo Upload Placeholder */}
+            {/* Step Indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</div>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('step_account')}</span>
+              <div style={{ flex: 1, height: '2px', backgroundColor: '#f1f5f9' }} />
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#f1f5f9', color: 'var(--text-subtle)', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</div>
+            </div>
+
+            {/* Photo */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
               <div style={{ position: 'relative' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#f8fafc', border: '2px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                  <User size={40} />
+                <div style={{ width: '96px', height: '96px', borderRadius: '50%', backgroundColor: '#f8fafc', border: '2px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                  <User size={38} />
                 </div>
-                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', cursor: 'pointer' }}>
-                  <Camera size={16} />
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '30px', height: '30px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', cursor: 'pointer' }}>
+                  <Camera size={14} />
                 </div>
               </div>
             </div>
 
-            <InputField label={t('label_fullname')} name="fullName" value={formData.fullName} onChange={handleChange} required placeholder={t('placeholder_fullname') || "Abebe Bikila"} />
-            <InputField label={t('label_username')} name="username" value={formData.username} onChange={handleChange} required icon={User} placeholder={t('label_username')} />
-            <InputField label={t('label_phone')} type="tel" name="phone" value={formData.phone} onChange={handleChange} required icon={Phone} placeholder="+251 9XX XXX XXX" />
+            <InputField label={t('label_fullname')} name="fullName" value={formData.fullName} onChange={handleChange} required placeholder={t('placeholder_fullname')} />
+            <InputField label={t('label_username')} name="username" value={formData.username} onChange={handleChange} required icon={User} placeholder={t('placeholder_username')} />
+            <InputField label={t('label_phone')} type="tel" name="phone" value={formData.phone} onChange={handleChange} required icon={Phone} placeholder={t('placeholder_phone')} />
             <InputField label={t('label_password')} type="password" name="password" value={formData.password} onChange={handleChange} required icon={Lock} placeholder="••••••••" />
             <p style={{ fontSize: '0.75rem', color: formData.password && formData.password.length < 6 ? 'var(--danger)' : 'var(--text-subtle)', marginTop: '-0.75rem' }}>
               {t('hint_password')}
             </p>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => setStep(2)}
               disabled={!isStep1Valid}
               style={{
-                marginTop: '1rem', padding: '1rem', borderRadius: '12px',
+                marginTop: '0.5rem', padding: '1rem', borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--accent)', color: 'white', border: 'none',
                 fontWeight: '700', cursor: isStep1Valid ? 'pointer' : 'not-allowed',
-                opacity: isStep1Valid ? 1 : 0.6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                opacity: isStep1Valid ? 1 : 0.6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+                boxShadow: isStep1Valid ? '0 4px 12px rgba(99, 102, 241, 0.25)' : 'none'
               }}
             >
               {t('btn_continue')}
@@ -215,90 +195,137 @@ const SignUpPage = () => {
             exit={{ opacity: 0, x: -20 }}
             style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
           >
+            {/* Step Indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--success)', color: '#fff', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircle2 size={14} /></div>
+              <div style={{ flex: 1, height: '2px', backgroundColor: 'var(--primary)' }} />
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</div>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('step_role')}</span>
+            </div>
+
+            {error && (
+              <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', color: 'var(--danger)', fontSize: '0.85rem' }}>
+                {error}
+              </div>
+            )}
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-subtle)', marginBottom: '1rem', textTransform: 'uppercase' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {t('category_title')}
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div 
-                  onClick={() => handleSelectChange('category', 'coordinator')}
-                  style={{
-                    padding: '1.25rem', borderRadius: '16px', border: `2px solid ${formData.category === 'coordinator' ? 'var(--accent)' : '#f1f5f9'}`,
-                    backgroundColor: formData.category === 'coordinator' ? 'var(--accent)05' : '#fff',
-                    cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'
-                  }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🛡️</div>
-                  <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{t('amharic_coordinator')}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-subtle)' }}>{t('label_coordinator')}</div>
-                </div>
-                <div 
-                  onClick={() => handleSelectChange('category', 'regional')}
-                  style={{
-                    padding: '1.25rem', borderRadius: '16px', border: `2px solid ${formData.category === 'regional' ? 'var(--accent)' : '#f1f5f9'}`,
-                    backgroundColor: formData.category === 'regional' ? 'var(--accent)05' : '#fff',
-                    cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s'
-                  }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👥</div>
-                  <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{t('amharic_regional')}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-subtle)' }}>{t('label_regional')}</div>
-                </div>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <CategoryCard
+                  selected={formData.category === 'coordinator'}
+                  onClick={() => handleCategorySelect('coordinator')}
+                  amharic="ማስተባበሪያ"
+                  english="Coordinator"
+                  icon={Shield}
+                  color="#0ea5e9"
+                />
+                <CategoryCard
+                  selected={formData.category === 'regional'}
+                  onClick={() => handleCategorySelect('regional')}
+                  amharic="ግንኙነት ማዕከል"
+                  english="Regional"
+                  icon={Users}
+                  color="#6366f1"
+                />
               </div>
             </div>
 
-            {formData.category === 'regional' && (
-              <PremiumSelect 
-                label={t('label_region')}
-                name="region"
-                options={getRegionOptions()}
-                value={formData.region}
-                onChange={(e) => handleSelectChange('region', e.target.value)}
-                placeholder={t('placeholder_region')}
-              />
-            )}
+            <AnimatePresence mode="wait">
+              {formData.category === 'coordinator' && (
+                <motion.div key="coordinator" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <SelectWrapper>
+                    <PremiumSelect 
+                      label={t('label_department')}
+                      name="subRole" 
+                      value={formData.subRole} 
+                      onChange={handleChange} 
+                      options={getSubRoleOptions()} 
+                      placeholder={t('placeholder_department')} 
+                      icon={Building2} 
+                      required 
+                    />
+                  </SelectWrapper>
 
-            {formData.category && (
-              <PremiumSelect 
-                label={formData.category === 'coordinator' ? t('label_department') : t('label_sub_dept')}
-                name="subRole"
-                options={getSubRoleOptions()}
-                value={formData.subRole}
-                onChange={(e) => handleSelectChange('subRole', e.target.value)}
-                placeholder={formData.category === 'coordinator' ? t('placeholder_department') : t('placeholder_sub_dept')}
-              />
-            )}
+                  <AnimatePresence>
+                    {formData.subRole === 'main_office' && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                        <SelectWrapper>
+                          <PremiumSelect 
+                            label={t('label_position')}
+                            name="position" 
+                            value={formData.position} 
+                            onChange={handleChange} 
+                            options={getPositionOptions()} 
+                            placeholder={t('placeholder_position')} 
+                            icon={Landmark} 
+                            required 
+                          />
+                        </SelectWrapper>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
 
-            {formData.category === 'coordinator' && formData.subRole === 'main_office' && (
-              <PremiumSelect 
-                label={t('label_position')}
-                name="position"
-                options={getPositionOptions()}
-                value={formData.position}
-                onChange={(e) => handleSelectChange('position', e.target.value)}
-                placeholder={t('placeholder_position')}
-              />
-            )}
+              {formData.category === 'regional' && (
+                <motion.div key="regional" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <SelectWrapper>
+                    <PremiumSelect 
+                      label={t('label_region')}
+                      name="region" 
+                      value={formData.region} 
+                      onChange={handleChange} 
+                      options={getRegionOptions()} 
+                      placeholder={t('placeholder_region')} 
+                      icon={MapPin} 
+                      required 
+                    />
+                  </SelectWrapper>
+                  <SelectWrapper>
+                    <PremiumSelect 
+                      label={t('label_sub_dept')}
+                      name="subRole" 
+                      value={formData.subRole} 
+                      onChange={handleChange} 
+                      options={getSubRoleOptions()} 
+                      placeholder={t('placeholder_sub_dept')} 
+                      icon={Building2} 
+                      required 
+                    />
+                  </SelectWrapper>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button
                 onClick={() => setStep(1)}
                 style={{
-                  padding: '1rem', borderRadius: '12px', backgroundColor: '#f1f5f9', color: 'var(--text-main)', border: 'none', fontWeight: '600', cursor: 'pointer'
+                  flex: '0 0 auto', padding: '0.9rem 1.5rem', borderRadius: 'var(--radius-md)',
+                  backgroundColor: '#fff', color: 'var(--text-main)', border: '2px solid #e2e8f0',
+                  fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
                 }}
               >
-                {t('btn_back')}
+                <ChevronLeft size={18} /> {t('btn_back')}
               </button>
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={isStep2Valid ? { scale: 1.01 } : {}}
+                whileTap={isStep2Valid ? { scale: 0.99 } : {}}
                 onClick={handleSubmit}
                 disabled={loading || !isStep2Valid}
                 style={{
-                  padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--primary)', color: 'white', border: 'none', fontWeight: '700', cursor: loading || !isStep2Valid ? 'not-allowed' : 'pointer', opacity: loading || !isStep2Valid ? 0.6 : 1
+                  flex: 1, padding: '0.9rem', borderRadius: 'var(--radius-md)',
+                  background: isStep2Valid ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#e2e8f0',
+                  color: isStep2Valid ? '#fff' : 'var(--text-subtle)', border: 'none',
+                  fontWeight: '700', cursor: loading || !isStep2Valid ? 'not-allowed' : 'pointer',
+                  boxShadow: isStep2Valid ? '0 8px 20px rgba(14,165,233,0.3)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
                 }}
               >
-                {loading ? t('loading_authenticating') : t('btn_complete')}
+                {loading ? <Loader2 size={20} className="animate-spin" /> : t('btn_complete')}
               </motion.button>
             </div>
           </motion.div>
@@ -309,24 +336,58 @@ const SignUpPage = () => {
             key="step3"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            style={{ textAlign: 'center', padding: '2rem 0' }}
+            style={{ textAlign: 'center', padding: '1.5rem 0' }}
           >
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#f0fdf4', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-              <CheckCircle2 size={48} />
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '88px', height: '88px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #22c55e20, #22c55e10)',
+                color: '#22c55e', marginBottom: '1.5rem',
+              }}
+            >
+              <CheckCircle2 size={52} />
+            </motion.div>
+
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+              {t('success_welcome').replace('{name}', formData.fullName.split(' ')[0])}
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>
+              {t('success_msg')}
+            </p>
+
+            <div style={{ height: '4px', backgroundColor: '#e2e8f0', borderRadius: '4px', marginBottom: '1.5rem', overflow: 'hidden' }}>
+              <motion.div
+                initial={{ width: '0%' }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 5, ease: 'linear' }}
+                style={{ height: '100%', background: 'linear-gradient(90deg, #0ea5e9, #6366f1)', borderRadius: '4px' }}
+              />
             </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>{t('step_success')}</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>{t('success_redirect')}</p>
-            <Link to="/login" style={{ display: 'inline-block', padding: '0.75rem 2rem', borderRadius: '12px', backgroundColor: 'var(--primary)', color: '#fff', textDecoration: 'none', fontWeight: '700' }}>
-              {t('btn_signin')}
-            </Link>
+
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                width: '100%', padding: '0.95rem',
+                background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+                color: '#fff', border: 'none', borderRadius: 'var(--radius-md)',
+                fontSize: '0.95rem', fontWeight: '700', cursor: 'pointer',
+                boxShadow: '0 8px 20px rgba(14,165,233,0.30)',
+              }}
+            >
+              {t('btn_signin_now') || 'Sign In Now'}
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {step < 3 && (
-        <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
           {language === 'am' ? 'አካውንት አለዎት?' : 'Already have an account?'}{' '}
-          <Link to="/login" style={{ color: 'var(--accent)', fontWeight: '700', textDecoration: 'none' }}>
+          <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>
             {t('btn_signin')}
           </Link>
         </p>
