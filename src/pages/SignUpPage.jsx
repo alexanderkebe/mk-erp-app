@@ -4,12 +4,18 @@ import { User, Lock, Phone, ArrowRight, ArrowLeft, CheckCircle2, Camera } from '
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthLayout from '../components/AuthLayout';
 import { InputField, PremiumSelect } from '../components/FormFields';
-import { CATEGORIES, POSITIONS, REGIONS } from '../data/roles';
+import { 
+  CATEGORIES, 
+  COORDINATOR_ROLES, 
+  REGIONAL_ROLES, 
+  MAIN_OFFICE_POSITIONS, 
+  REGIONS 
+} from '../data/roles';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language, toggleLanguage } = useLanguage();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,10 +52,8 @@ const SignUpPage = () => {
     setLoading(true);
     setError('');
     
-    const apiUrl = import.meta.env.VITE_API_URL || '';
-    
     try {
-      const res = await fetch(`${apiUrl}/api/auth/register`, {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -81,32 +85,24 @@ const SignUpPage = () => {
     : (formData.region && formData.subRole);
 
   const getSubRoleOptions = () => {
-    if (formData.category === 'coordinator') {
-      return CATEGORIES.COORDINATOR.subDepartments.map(d => ({ 
-        value: d.id, 
-        label: language === 'am' ? d.amharic : d.label 
-      }));
-    }
-    if (formData.category === 'regional') {
-      return CATEGORIES.REGIONAL.subDepartments.map(d => ({ 
-        value: d.id, 
-        label: language === 'am' ? d.amharic : d.label 
-      }));
-    }
-    return [];
+    const source = formData.category === 'coordinator' ? COORDINATOR_ROLES : REGIONAL_ROLES;
+    return (source || []).map(r => ({
+      id: r.id,
+      name: language === 'am' ? r.amharic : r.english
+    }));
   };
 
   const getRegionOptions = () => {
-    return REGIONS.map(r => ({ 
-      value: r.id, 
-      label: language === 'am' ? r.amharic : r.label 
+    return REGIONS.map(r => ({
+      id: r.id,
+      name: language === 'am' ? (r.amharic || r.name) : r.name
     }));
   };
 
   const getPositionOptions = () => {
-    return POSITIONS.map(p => ({ 
-      value: p.id, 
-      label: language === 'am' ? p.amharic : p.label 
+    return MAIN_OFFICE_POSITIONS.map(p => ({
+      id: p.id,
+      name: language === 'am' ? p.amharic : p.english
     }));
   };
 
@@ -254,9 +250,10 @@ const SignUpPage = () => {
             {formData.category === 'regional' && (
               <PremiumSelect 
                 label={t('label_region')}
+                name="region"
                 options={getRegionOptions()}
                 value={formData.region}
-                onChange={(val) => handleSelectChange('region', val)}
+                onChange={(e) => handleSelectChange('region', e.target.value)}
                 placeholder={t('placeholder_region')}
               />
             )}
@@ -264,9 +261,10 @@ const SignUpPage = () => {
             {formData.category && (
               <PremiumSelect 
                 label={formData.category === 'coordinator' ? t('label_department') : t('label_sub_dept')}
+                name="subRole"
                 options={getSubRoleOptions()}
                 value={formData.subRole}
-                onChange={(val) => handleSelectChange('subRole', val)}
+                onChange={(e) => handleSelectChange('subRole', e.target.value)}
                 placeholder={formData.category === 'coordinator' ? t('placeholder_department') : t('placeholder_sub_dept')}
               />
             )}
@@ -274,9 +272,10 @@ const SignUpPage = () => {
             {formData.category === 'coordinator' && formData.subRole === 'main_office' && (
               <PremiumSelect 
                 label={t('label_position')}
+                name="position"
                 options={getPositionOptions()}
                 value={formData.position}
-                onChange={(val) => handleSelectChange('position', val)}
+                onChange={(e) => handleSelectChange('position', e.target.value)}
                 placeholder={t('placeholder_position')}
               />
             )}
@@ -326,7 +325,7 @@ const SignUpPage = () => {
 
       {step < 3 && (
         <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          {t('no_account_text') === "Don't have an account?" ? "Already have an account?" : "አካውንት አለዎት?"}{' '}
+          {language === 'am' ? 'አካውንት አለዎት?' : 'Already have an account?'}{' '}
           <Link to="/login" style={{ color: 'var(--accent)', fontWeight: '700', textDecoration: 'none' }}>
             {t('btn_signin')}
           </Link>
