@@ -1,40 +1,47 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+import { useLanguage } from '../i18n/LanguageContext';
+
 /* MK Logo mark */
-const MKLogo = () => (
-  <div style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '72px',
-    height: '72px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-    border: '3px solid rgba(255,255,255,0.9)',
-    backgroundColor: '#fff',
-    marginBottom: '1rem',
-  }}>
-    <img
-      src="/mk logo.png"
-      alt="Mahibere Kidusan Logo"
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-    />
-  </div>
-);
+const MKLogo = () => {
+  const { t } = useLanguage();
+  return (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '72px',
+      height: '72px',
+      borderRadius: '50%',
+      overflow: 'hidden',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+      border: '3px solid rgba(255,255,255,0.9)',
+      backgroundColor: '#fff',
+      marginBottom: '1rem',
+    }}>
+      <img
+        src="/mk logo.png"
+        alt={t('logo_alt')}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+    </div>
+  );
+};
 
 const AuthLayout = ({ children, title, subtitle }) => {
+  const { t } = useLanguage();
   return (
     <div style={{
       minHeight: '100vh',
       width: '100%',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center',
-      padding: '1.5rem',
+      alignItems: 'flex-start',
+      padding: '2.5rem 1.5rem',
       background: 'var(--bg-gradient)',
       backgroundAttachment: 'fixed',
+      overflowY: 'auto',
     }}>
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -51,7 +58,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
           boxShadow: 'var(--shadow-lg)',
           border: '1px solid rgba(255, 255, 255, 0.8)',
           position: 'relative',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         {/* Decorative top gradient bar */}
@@ -61,6 +68,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
           height: '4px',
           background: 'linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7)',
           borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
+          overflow: 'hidden',
         }} />
 
         <header style={{ textAlign: 'center', marginBottom: '2rem' }}>

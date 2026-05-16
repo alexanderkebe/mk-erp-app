@@ -1,222 +1,187 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, LogIn, Loader2, AlertCircle } from 'lucide-react';
+import { User, Lock, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthLayout from '../components/AuthLayout';
 import { InputField } from '../components/FormFields';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { t, toggleLanguage, language } = useLanguage();
   const [formData, setFormData] = useState({ username: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setError('');
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username.trim() || !formData.password.trim()) {
-      setError('Please fill in all fields.');
+    if (!formData.username || !formData.password) {
+      setError(t('err_fill_fields'));
       return;
     }
-    setIsLoading(true);
+
+    setLoading(true);
     setError('');
-    
-    // Simulate API login
-    setTimeout(() => {
-      // Default mock user
-      const user = {
-        fullName: formData.username,
-        category: 'coordinator',
-        role: 'main_office',
-        position: 'member',
-        initials: formData.username.substring(0, 2).toUpperCase(),
-      };
-      
-      localStorage.setItem('mk_user', JSON.stringify(user));
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
-  };
 
-  const handleQuickLogin = (type) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      let user = {};
-      if (type === 'chairman') {
-        user = {
-          fullName: 'Chairman User',
-          category: 'coordinator',
-          role: 'main_office',
-          position: 'chairman',
-          initials: 'CH',
-        };
-      } else if (type === 'sub_chairman') {
-        user = {
-          fullName: 'Sub Chairman User',
-          category: 'coordinator',
-          role: 'main_office',
-          position: 'sub_chairman',
-          initials: 'SC',
-        };
-      } else if (type === 'secretary') {
-        user = {
-          fullName: 'Secretary User',
-          category: 'coordinator',
-          role: 'main_office',
-          position: 'secretary',
-          initials: 'SU',
-        };
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username.toLowerCase(),
+          password: formData.password
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('mk_token', data.token);
+        localStorage.setItem('mk_user', JSON.stringify(data.user));
+        navigate('/dashboard');
       } else {
-        user = {
-          fullName: 'Regular Member',
-          category: 'regional',
-          role: 'akaki_kilinto',
-          position: 'member',
-          initials: 'RM',
-        };
+        setError(data.message || t('err_login_failed'));
       }
-      localStorage.setItem('mk_user', JSON.stringify(user));
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 800);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(t('err_server_connection'));
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const isValid = formData.username.trim() && formData.password.trim();
 
   return (
-    <AuthLayout
-      title="Welcome Back"
-      subtitle="Sign in to your MK management account"
+    <AuthLayout 
+      title={t('login_title')}
+      subtitle={t('login_subtitle')}
     >
-      <form onSubmit={handleSubmit}>
-        {/* ... existing form fields ... */}
-        {/* Error banner */}
+      {/* Language Toggle */}
+      <div style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', zIndex: 10 }}>
+        <button 
+          onClick={toggleLanguage}
+          style={{
+            padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--accent)',
+            background: 'var(--card-bg)', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '700',
+            boxShadow: 'var(--shadow-sm)', transition: 'all 0.2s'
+          }}
+        >
+          {language === 'am' ? 'English' : 'አማርኛ'}
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <AnimatePresence>
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: -8, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -8, height: 0 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.75rem 1rem', marginBottom: '1.25rem',
-                backgroundColor: '#fef2f2', border: '1px solid #fecaca',
-                borderRadius: 'var(--radius-sm)', color: '#dc2626',
-                fontSize: '0.875rem', fontWeight: '500',
+                padding: '0.75rem 1rem',
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--danger)',
+                fontSize: '0.85rem',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
               }}
             >
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--danger)' }} />
               {error}
             </motion.div>
           )}
         </AnimatePresence>
 
         <InputField
-          label="Username"
+          label={t('label_username')}
           name="username"
           value={formData.username}
           onChange={handleChange}
-          placeholder="Your username"
           required
           icon={User}
-        />
-        <InputField
-          label="Password"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Your password"
-          required
-          icon={Lock}
+          placeholder={t('placeholder_username') || 'Username'}
         />
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem', marginTop: '-0.25rem' }}>
-          <Link to="#" style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--primary)', textDecoration: 'none' }}>
-            Forgot password?
-          </Link>
+        <div style={{ position: 'relative' }}>
+          <InputField
+            label={t('label_password')}
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            icon={Lock}
+            placeholder={t('placeholder_password') || 'Password'}
+          />
+          <a href="#" style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            fontSize: '0.8rem',
+            color: 'var(--accent)',
+            textDecoration: 'none',
+            fontWeight: '600'
+          }}>
+            {t('forgot_password')}
+          </a>
         </div>
 
         <motion.button
+          whileHover={{ scale: 1.01, boxShadow: 'var(--shadow-glow)' }}
+          whileTap={{ scale: 0.98 }}
           type="submit"
-          disabled={!isValid || isLoading}
-          whileHover={isValid && !isLoading ? { scale: 1.02 } : {}}
-          whileTap={isValid && !isLoading ? { scale: 0.98 } : {}}
+          disabled={loading}
           style={{
-            width: '100%', padding: '0.95rem',
-            background: isValid ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#e2e8f0',
-            color: isValid ? '#fff' : 'var(--text-subtle)',
-            border: 'none', borderRadius: 'var(--radius-md)',
-            fontSize: '0.95rem', fontWeight: '700',
-            cursor: isValid && !isLoading ? 'pointer' : 'not-allowed',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-            boxShadow: isValid ? '0 8px 20px rgba(14,165,233,0.30)' : 'none',
-            transition: 'all 0.25s',
+            marginTop: '0.5rem',
+            padding: '1rem',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--accent)',
+            color: 'white',
+            border: 'none',
+            fontSize: '1rem',
+            fontWeight: '700',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+            opacity: loading ? 0.7 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem',
           }}
         >
-          {isLoading ? (
+          {loading ? t('loading_authenticating') : (
             <>
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                style={{ display: 'flex' }}
-              >
-                <Loader2 size={20} />
-              </motion.span>
-              Signing in...
-            </>
-          ) : (
-            <>
-              Sign In <LogIn size={18} />
+              {t('btn_signin')}
+              <ArrowRight size={18} />
             </>
           )}
         </motion.button>
-      </form>
 
-      {/* Development Quick Access */}
-      <div style={{ marginTop: '2rem', padding: '1rem', border: '1px dashed #cbd5e1', borderRadius: 'var(--radius-md)', backgroundColor: 'rgba(241,245,249,0.5)' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Development Quick Login
-        </p>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button 
-            onClick={() => handleQuickLogin('chairman')}
-            style={{ flex: '1 1 100%', padding: '0.6rem', fontSize: '0.75rem', fontWeight: '700', borderRadius: '6px', border: '1px solid #ef4444', color: '#ef4444', background: '#fef2f2', cursor: 'pointer', marginBottom: '0.5rem' }}
-          >
-            Full Chairman Access
-          </button>
-          <button 
-            onClick={() => handleQuickLogin('sub_chairman')}
-            style={{ flex: '1 1 calc(50% - 0.25rem)', padding: '0.5rem', fontSize: '0.75rem', fontWeight: '600', borderRadius: '6px', border: '1px solid #0ea5e9', color: '#0ea5e9', background: 'none', cursor: 'pointer' }}
-          >
-            Sub-Chairman
-          </button>
-          <button 
-            onClick={() => handleQuickLogin('secretary')}
-            style={{ flex: '1 1 calc(50% - 0.25rem)', padding: '0.5rem', fontSize: '0.75rem', fontWeight: '600', borderRadius: '6px', border: '1px solid #6366f1', color: '#6366f1', background: 'none', cursor: 'pointer' }}
-          >
-            Secretary
-          </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          margin: '0.5rem 0'
+        }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', fontWeight: '600' }}>OR</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
         </div>
-      </div>
 
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1.75rem 0 1.5rem' }}>
-        <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', fontWeight: '500' }}>OR</span>
-        <div style={{ flex: 1, height: '1px', backgroundColor: '#e2e8f0' }} />
-      </div>
-
-      <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-        Don't have an account?{' '}
-        <Link to="/signup" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>
-          Create one
-        </Link>
-      </p>
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          {t('no_account_text')}{' '}
+          <Link to="/signup" style={{ color: 'var(--accent)', fontWeight: '700', textDecoration: 'none' }}>
+            {t('link_create_account')}
+          </Link>
+        </p>
+      </form>
     </AuthLayout>
   );
 };
