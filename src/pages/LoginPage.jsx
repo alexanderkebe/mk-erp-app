@@ -13,10 +13,56 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleQuickLogin = (roleKey) => {
+    setLoading(true);
+    
+    // Mock user data for bypassing the server
+    const mockUsers = {
+      abebe_chairman: {
+        fullName: 'Abebe Tadesse',
+        username: 'abebe_chairman',
+        category: 'coordinator',
+        subRole: 'main_office',
+        position: 'chairman'
+      },
+      sara_sec: {
+        fullName: 'Sara Mekonnen',
+        username: 'sara_sec',
+        category: 'coordinator',
+        subRole: 'main_office',
+        position: 'secretary'
+      },
+      kebede_sub: {
+        fullName: 'Kebede Alemu',
+        username: 'kebede_sub',
+        category: 'coordinator',
+        subRole: 'main_office',
+        position: 'sub_chairman'
+      },
+      meron_regional: {
+        fullName: 'Meron Girma',
+        username: 'meron_regional',
+        category: 'regional',
+        subRole: 'main_office',
+        region: 'akaki_kilinto',
+        position: 'member'
+      }
+    };
+
+    const user = mockUsers[roleKey];
+    if (user) {
+      setTimeout(() => {
+        localStorage.setItem('mk_token', 'bypass_token_' + Date.now());
+        localStorage.setItem('mk_user', JSON.stringify(user));
+        navigate('/dashboard');
+        setLoading(false);
+      }, 800);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -39,18 +85,14 @@ const LoginPage = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Save user data and token
         localStorage.setItem('mk_token', data.token);
         localStorage.setItem('mk_user', JSON.stringify(data.user));
-        
-        // Success animation or direct redirect
         navigate('/dashboard');
       } else {
         setError(data.message || 'Login failed');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Connection Error: Please ensure the server is running.');
+      setError(t('err_server_connection'));
     } finally {
       setLoading(false);
     }
@@ -66,16 +108,9 @@ const LoginPage = () => {
         <button 
           onClick={toggleLanguage}
           style={{
-            padding: '4px 12px',
-            borderRadius: '20px',
-            border: '1px solid var(--accent)',
-            background: 'var(--card-bg)',
-            color: 'var(--accent)',
-            cursor: 'pointer',
-            fontSize: '0.75rem',
-            fontWeight: '700',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'all 0.2s'
+            padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--accent)',
+            background: 'var(--card-bg)', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '700',
+            boxShadow: 'var(--shadow-sm)', transition: 'all 0.2s'
           }}
         >
           {language === 'am' ? 'English' : 'አማርኛ'}
@@ -90,15 +125,8 @@ const LoginPage = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               style={{
-                padding: '0.75rem',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '12px',
-                color: 'var(--danger)',
-                fontSize: '0.85rem',
-                marginBottom: '1.5rem',
-                textAlign: 'center',
-                fontWeight: '600'
+                padding: '0.75rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca',
+                borderRadius: '12px', color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '1.5rem', textAlign: 'center', fontWeight: '600'
               }}
             >
               {error}
@@ -129,13 +157,7 @@ const LoginPage = () => {
               placeholder={t('placeholder_password') || 'Password'}
             />
             <a href="#" style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              fontSize: '0.8rem',
-              color: 'var(--accent)',
-              textDecoration: 'none',
-              fontWeight: '600'
+              position: 'absolute', top: 0, right: 0, fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: '600'
             }}>
               {t('forgot_password')}
             </a>
@@ -147,21 +169,10 @@ const LoginPage = () => {
             type="submit"
             disabled={loading}
             style={{
-              marginTop: '0.5rem',
-              padding: '1rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--accent)',
-              color: 'white',
-              border: 'none',
-              fontSize: '1rem',
-              fontWeight: '700',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
-              opacity: loading ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
+              marginTop: '0.5rem', padding: '1rem', borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--accent)', color: 'white', border: 'none', fontSize: '1rem', fontWeight: '700',
+              cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+              opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'
             }}
           >
             {loading ? t('loading_authenticating') : t('btn_signin')}
@@ -169,10 +180,10 @@ const LoginPage = () => {
           </motion.button>
         </form>
 
-        {/* Quick Login for Testing */}
+        {/* Quick Login - NOW WITH BYPASS */}
         <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
           <p style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--text-subtle)', textTransform: 'uppercase', marginBottom: '1rem', textAlign: 'center', letterSpacing: '0.05em' }}>
-            Quick Test Accounts
+            Quick Login (Demo Bypass)
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             {[
@@ -184,7 +195,7 @@ const LoginPage = () => {
               <button
                 key={test.user}
                 type="button"
-                onClick={() => setFormData({ username: test.user, password: 'pass1234' })}
+                onClick={() => handleQuickLogin(test.user)}
                 style={{
                   padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0',
                   background: '#fff', fontSize: '0.8rem', fontWeight: '700',
@@ -194,7 +205,7 @@ const LoginPage = () => {
                 onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
               >
-                <span style={{ fontSize: '1.1rem' }}>🔑</span> {test.label}
+                <span style={{ fontSize: '1.1rem' }}>⚡</span> {test.label}
               </button>
             ))}
           </div>
